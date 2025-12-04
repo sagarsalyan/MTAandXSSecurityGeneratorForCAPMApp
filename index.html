@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Generate MTA</title>
@@ -24,8 +24,15 @@
     }
 
     /* ---------- App Shell (Full viewport) ---------- */
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
     body {
       margin: 0;
       font-family: "Segoe UI", Roboto, Helvetica, Arial, ui-sans-serif, system-ui;
@@ -45,6 +52,7 @@
       border-bottom: 1px solid var(--border);
       padding: 0.6rem 0.9rem;
     }
+
     .bar {
       display: flex;
       align-items: center;
@@ -52,6 +60,7 @@
       width: 100%;
       margin: 0;
     }
+
     .title {
       margin: 0;
       font-size: clamp(1rem, 0.95rem + 0.7vw, 1.35rem);
@@ -59,6 +68,7 @@
       letter-spacing: -0.01em;
       color: var(--text);
     }
+
     .subtitle {
       margin: 0;
       color: var(--muted);
@@ -72,6 +82,7 @@
       gap: 0.4rem;
       flex-wrap: wrap;
     }
+
     .tab {
       appearance: none;
       border: 1px solid var(--border);
@@ -83,16 +94,18 @@
       cursor: pointer;
       transition: background 120ms ease, box-shadow 120ms ease, border-color 120ms ease, color 120ms ease, transform 80ms ease;
     }
+
     .tab:hover {
       background: #303030;
-      box-shadow: 0 1px 8px rgba(0,0,0,0.3);
+      box-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
       transform: translateY(-1px);
     }
+
     .tab[aria-selected="true"] {
       color: #0b1220;
       background: linear-gradient(180deg, var(--primary), var(--primary-600));
       border-color: color-mix(in oklab, var(--primary), black 18%);
-      box-shadow: 0 4px 12px rgba(86,156,214,0.25);
+      box-shadow: 0 4px 12px rgba(86, 156, 214, 0.25);
     }
 
     /* ---------- Main: Split layout (Form | Output) ---------- */
@@ -100,10 +113,14 @@
       height: 100%;
       width: 100%;
       display: grid;
-      grid-template-columns: 3fr 2fr; /* 60/40 split */
+      grid-template-columns: 3fr 2fr;
+      /* 60/40 split */
     }
+
     @media (max-width: 1100px) {
-      .app-main { grid-template-columns: 1fr; }
+      .app-main {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Left: Panels (scroll inside) */
@@ -111,9 +128,11 @@
       border-right: 1px solid var(--border);
       background: var(--panel);
       display: grid;
-      grid-template-rows: 1fr auto; /* scrollable area + actions */
+      grid-template-rows: 1fr auto;
+      /* scrollable area + actions */
       min-width: 0;
     }
+
     .panels {
       overflow: auto;
       padding: 0.7rem;
@@ -132,6 +151,7 @@
       display: grid;
       grid-template-rows: auto 1fr;
     }
+
     .op header {
       padding: 0.6rem 0.8rem;
       border-bottom: 1px solid var(--border);
@@ -143,7 +163,14 @@
       justify-content: space-between;
       gap: 0.6rem;
     }
-    .output-title { margin: 0; display: flex; gap: 0.5rem; align-items: center; }
+
+    .output-title {
+      margin: 0;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
     .badge {
       display: inline-block;
       padding: 0.1rem 0.42rem;
@@ -168,9 +195,10 @@
       background: #2a2a2a;
       transition: transform 80ms ease, box-shadow 120ms ease, background 120ms ease, border-color 120ms ease;
     }
+
     .btn-download:hover {
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
       background: #303030;
     }
 
@@ -187,7 +215,10 @@
     }
 
     /* ---------- Forms: compact + floating labels ---------- */
-    form { display: grid; gap: 0.6rem; }
+    form {
+      display: grid;
+      gap: 0.6rem;
+    }
 
     /* Responsive multi-column grid */
     .grid {
@@ -196,11 +227,17 @@
       align-items: start;
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
     @media (max-width: 1200px) {
-      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
     }
+
     @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr !important; }
+      .grid {
+        grid-template-columns: 1fr !important;
+      }
     }
 
     .field {
@@ -214,10 +251,12 @@
     .fl {
       position: relative;
     }
+
     .fl input[type="text"] {
       appearance: none;
       width: 100%;
-      padding: 1.2rem 0.65rem 0.5rem;  /* space for label */
+      padding: 1.2rem 0.65rem 0.5rem;
+      /* space for label */
       border-radius: 7px;
       border: 1px solid var(--border);
       background: #1f1f1f;
@@ -228,8 +267,15 @@
     }
 
     /* Fix: prevent placeholder overlapping with floating label */
-    .fl input::placeholder { color: transparent; opacity: 0; }
-    .fl input:focus::placeholder { color: #7f7f7f; opacity: 0.35; }
+    .fl input::placeholder {
+      color: transparent;
+      opacity: 0;
+    }
+
+    .fl input:focus::placeholder {
+      color: #7f7f7f;
+      opacity: 0.35;
+    }
 
     .fl input[type="text"]:focus {
       border-color: var(--primary);
@@ -254,17 +300,19 @@
     }
 
     /* Float when focused or has value */
-    .fl input:focus + label,
-    .fl input:not(:placeholder-shown) + label {
+    .fl input:focus+label,
+    .fl input:not(:placeholder-shown)+label {
       transform: translateY(-0.55rem) scale(0.9);
       color: var(--primary);
-      background: var(--panel); /* subtle chip under text */
+      background: var(--panel);
+      /* subtle chip under text */
     }
 
     .hint {
       font-size: 0.78rem;
       color: var(--muted);
     }
+
     .hint code {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
       font-size: 0.76rem;
@@ -279,6 +327,7 @@
       border-top: 1px solid var(--border);
       background: var(--panel-2);
     }
+
     .btn {
       appearance: none;
       border: 1px solid var(--border);
@@ -291,23 +340,34 @@
       color: var(--text);
       background: #2a2a2a;
     }
+
     .btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
       background: #303030;
     }
-    .btn:active { transform: translateY(0); }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
     .btn-primary {
       color: #0b1220;
       background: linear-gradient(180deg, var(--primary), var(--primary-600));
       border-color: color-mix(in oklab, var(--primary), black 18%);
     }
-    .btn-ghost { background: transparent; }
+
+    .btn-ghost {
+      background: transparent;
+    }
 
     /* Utility */
-    [hidden] { display: none !important; }
+    [hidden] {
+      display: none !important;
+    }
   </style>
 </head>
+
 <body>
   <!-- Header -->
   <header class="app-header">
@@ -317,8 +377,10 @@
         <p class="subtitle">Floating labels · Compact multi-column form · 60/40 split · Neutral outputs.</p>
       </div>
       <div class="tabs" role="tablist" aria-label="Form Tabs">
-        <button class="tab" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true" tabindex="0">Generate MTA</button>
-        <button class="tab" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1">Generate XS-Security</button>
+        <button class="tab" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true" tabindex="0">Generate
+          MTA</button>
+        <button class="tab" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1">Generate
+          XS-Security</button>
       </div>
     </div>
   </header>
@@ -332,21 +394,76 @@
         <section id="panel-1" role="tabpanel" aria-labelledby="tab-1">
           <form id="formA" novalidate>
             <div class="grid">
-              <div class="field"><div class="fl"><input type="text" id="projectId" name="projectId" placeholder="projectsid" /><label for="projectId">Project ID</label></div><span class="hint">e.g. <code>projectsid</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="projectDescription" name="projectDescription" placeholder="A simple CAP Project" /><label for="projectDescription">Project Description</label></div><span class="hint">e.g. <code>A simple CAP Project</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="serviceModule" name="serviceModule" placeholder="projects-srv" /><label for="serviceModule">Service Module</label></div><span class="hint">e.g. <code>projects-srv</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="dbDeployerModule" name="dbDeployerModule" placeholder="projects-db-deployer" /><label for="dbDeployerModule">DB Deployer Module</label></div><span class="hint">e.g. <code>projects-db-deployer</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="destinationContentModule" name="destinationContentModule" placeholder="projects-destination-content" /><label for="destinationContentModule">Destination Content Module</label></div><span class="hint">e.g. <code>projects-destination-content</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="appContentModule" name="appContentModule" placeholder="projects-app-content" /><label for="appContentModule">App Content Module</label></div><span class="hint">e.g. <code>projects-app-content</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="uiModule" name="uiModule" placeholder="capsampleui5" /><label for="uiModule">UI Module</label></div><span class="hint">e.g. <code>capsampleui5</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="authResource" name="authResource" placeholder="projects-auth" /><label for="authResource">Auth Resource</label></div><span class="hint">e.g. <code>projects-auth</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="dbResource" name="dbResource" placeholder="projects-db" /><label for="dbResource">DB Resource</label></div><span class="hint">e.g. <code>projects-db</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="dbType" name="dbType" placeholder="postgres or hana" /><label for="dbType">DB Type</label></div><span class="hint">e.g. <code>postgres</code> or <code>hana</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="servicePlan" name="servicePlan" placeholder="trial" /><label for="servicePlan">Service Plan</label></div><span class="hint">e.g. <code>trial</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="destinationResource" name="destinationResource" placeholder="projects-destination-service" /><label for="destinationResource">Destination Resource</label></div><span class="hint">e.g. <code>projects-destination-service</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="htmlResource" name="htmlResource" placeholder="htmlRepoResource" /><label for="htmlResource">HTML Resource</label></div><span class="hint">e.g. <code>htmlRepoResource</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="sapCloudService" name="sapCloudService" placeholder="sapcloudproject" /><label for="sapCloudService">SAP Cloud Service</label></div><span class="hint">e.g. <code>sapcloudproject</code></span></div>
-              <div class="field"><div class="fl"><input type="text" id="appName" name="appName" placeholder="capsampleui5" /><label for="appName">App Name</label></div><span class="hint">e.g. <code>capsampleui5</code></span></div>
+              <div class="field">
+                <div class="fl"><input type="text" id="projectId" name="projectId" placeholder="projectsid" /><label
+                    for="projectId">Project ID</label></div><span class="hint">e.g. <code>projectsid</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="projectDescription" name="projectDescription"
+                    placeholder="A simple CAP Project" /><label for="projectDescription">Project Description</label>
+                </div><span class="hint">e.g. <code>A simple CAP Project</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="serviceModule" name="serviceModule"
+                    placeholder="projects-srv" /><label for="serviceModule">Service Module</label></div><span
+                  class="hint">e.g. <code>projects-srv</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="dbDeployerModule" name="dbDeployerModule"
+                    placeholder="projects-db-deployer" /><label for="dbDeployerModule">DB Deployer Module</label></div>
+                <span class="hint">e.g. <code>projects-db-deployer</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="destinationContentModule" name="destinationContentModule"
+                    placeholder="projects-destination-content" /><label for="destinationContentModule">Destination
+                    Content Module</label></div><span class="hint">e.g. <code>projects-destination-content</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="appContentModule" name="appContentModule"
+                    placeholder="projects-app-content" /><label for="appContentModule">App Content Module</label></div>
+                <span class="hint">e.g. <code>projects-app-content</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="uiModule" name="uiModule" placeholder="capsampleui5" /><label
+                    for="uiModule">UI Module</label></div><span class="hint">e.g. <code>capsampleui5</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="authResource" name="authResource"
+                    placeholder="projects-auth" /><label for="authResource">Auth Resource</label></div><span
+                  class="hint">e.g. <code>projects-auth</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="dbResource" name="dbResource" placeholder="projects-db" /><label
+                    for="dbResource">DB Resource</label></div><span class="hint">e.g. <code>projects-db</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="dbType" name="dbType" placeholder="postgres or hana" /><label
+                    for="dbType">DB Type</label></div><span class="hint">e.g. <code>postgres</code> or
+                  <code>hana</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="servicePlan" name="servicePlan" placeholder="trial" /><label
+                    for="servicePlan">Service Plan</label></div><span class="hint">e.g. <code>trial</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="destinationResource" name="destinationResource"
+                    placeholder="projects-destination-service" /><label for="destinationResource">Destination
+                    Resource</label></div><span class="hint">e.g. <code>projects-destination-service</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="htmlResource" name="htmlResource"
+                    placeholder="htmlRepoResource" /><label for="htmlResource">HTML Resource</label></div><span
+                  class="hint">e.g. <code>htmlRepoResource</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="sapCloudService" name="sapCloudService"
+                    placeholder="sapcloudproject" /><label for="sapCloudService">SAP Cloud Service</label></div><span
+                  class="hint">e.g. <code>sapcloudproject</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="appName" name="appName" placeholder="capsampleui5" /><label
+                    for="appName">App Name</label></div><span class="hint">e.g. <code>capsampleui5</code></span>
+              </div>
             </div>
 
             <div class="actions">
@@ -370,7 +487,8 @@
 
               <div class="field">
                 <div class="fl">
-                  <input type="text" id="xsDescription" name="xsDescription" placeholder="Security profile of called application" />
+                  <input type="text" id="xsDescription" name="xsDescription"
+                    placeholder="Security profile of called application" />
                   <label for="xsDescription">Description</label>
                 </div>
                 <span class="hint">e.g. <code>Security profile of called application</code></span>
@@ -471,17 +589,72 @@
     });
 
     /* ---------- Serialization ---------- */
-    function toYAML(obj) {
-      const lines = [];
-      for (const [key, raw] of Object.entries(obj)) {
-        let val = raw == null ? '' : String(raw);
-        const needsQuotes = /[:#\n]/.test(val) || /^\s|\s$/.test(val);
-        if (val === '') val = '""';
-        else if (needsQuotes) val = JSON.stringify(val);
-        lines.push(`${key}: ${val}`);
+
+    function toYAML(value, indent = 0) {
+      const pad = "  ".repeat(indent);
+
+      if (value === null) return "null";
+
+      if (typeof value === "number" || typeof value === "boolean") {
+        return String(value);
       }
-      return lines.join('\n');
+
+      if (typeof value === "string") {
+        if (/[:\-\?\[\]\{\}\n]/.test(value)) {
+          return JSON.stringify(value);
+        }
+        return value;
+      }
+
+      // arrays
+      if (Array.isArray(value)) {
+        if (value.length === 0) return "[]";
+
+        return value
+          .map(item => {
+            if (typeof item === "object" && item !== null) {
+              // Convert object to YAML at indent+1 but fix the first line
+              const lines = toYAML(item, indent + 1).split("\n");
+
+              // First line after "-" → ONLY 1 space
+              lines[0] = "- " + lines[0].trimStart();
+
+              // Following lines → indent normally
+              for (let i = 1; i < lines.length; i++) {
+                lines[i] = pad + "  " + lines[i].trimStart();
+              }
+
+              return pad + lines.join("\n");
+            }
+
+            // primitive array value
+            return pad + "- " + toYAML(item, indent + 1);
+          })
+          .join("\n");
+      }
+
+      // objects
+      if (typeof value === "object") {
+        const keys = Object.keys(value);
+        if (keys.length === 0) return "{}";
+
+        return keys
+          .map(key => {
+            const v = value[key];
+            const head = pad + key + ":";
+
+            if (v === null || typeof v !== "object") {
+              return head + " " + toYAML(v, indent + 1);
+            }
+
+            return head + "\n" + toYAML(v, indent + 1);
+          })
+          .join("\n");
+      }
+
+      return String(value);
     }
+
     function toJSONPretty(obj) {
       return JSON.stringify(obj, null, 2);
     }
@@ -570,8 +743,9 @@
       });
     }
 
-    wireDownload({ buttonId: 'downloadMTA', preId: 'outputMTA', baseName: 'mta',          ext: 'yaml', mime: 'text/yaml' });
-    wireDownload({ buttonId: 'downloadXS',  preId: 'outputXS',  baseName: 'xs-security', ext: 'json', mime: 'application/json' });
+    wireDownload({ buttonId: 'downloadMTA', preId: 'outputMTA', baseName: 'mta', ext: 'yaml', mime: 'text/yaml' });
+    wireDownload({ buttonId: 'downloadXS', preId: 'outputXS', baseName: 'xs-security', ext: 'json', mime: 'application/json' });
   </script>
 </body>
+
 </html>
