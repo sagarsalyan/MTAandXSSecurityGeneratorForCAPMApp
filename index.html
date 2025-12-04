@@ -1,0 +1,577 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generate MTA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* ---------- VS Code Dark–like Low-Contrast Theme ---------- */
+    :root {
+      --bg: #1e1e1e;
+      --panel: #252526;
+      --panel-2: #2c2c2c;
+      --text: #d4d4d4;
+      --muted: #9da3ad;
+      --border: #3c3c3c;
+      --ring: rgba(86, 156, 214, 0.35);
+
+      --primary: #569cd6;
+      --primary-600: #4381b4;
+
+      --danger: #f48771;
+      color-scheme: dark;
+    }
+
+    /* ---------- App Shell (Full viewport) ---------- */
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, ui-sans-serif, system-ui;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 800px at 10% -10%, #20252b, transparent 60%),
+        radial-gradient(1200px 800px at 100% 10%, #1f2330, transparent 60%),
+        var(--bg);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .app-header {
+      background: var(--panel-2);
+      border-bottom: 1px solid var(--border);
+      padding: 0.6rem 0.9rem;
+    }
+    .bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      margin: 0;
+    }
+    .title {
+      margin: 0;
+      font-size: clamp(1rem, 0.95rem + 0.7vw, 1.35rem);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      margin-left: auto;
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .tab {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: #2a2a2a;
+      color: var(--text);
+      padding: 0.4rem 0.7rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 120ms ease, box-shadow 120ms ease, border-color 120ms ease, color 120ms ease, transform 80ms ease;
+    }
+    .tab:hover {
+      background: #303030;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.3);
+      transform: translateY(-1px);
+    }
+    .tab[aria-selected="true"] {
+      color: #0b1220;
+      background: linear-gradient(180deg, var(--primary), var(--primary-600));
+      border-color: color-mix(in oklab, var(--primary), black 18%);
+      box-shadow: 0 4px 12px rgba(86,156,214,0.25);
+    }
+
+    /* ---------- Main: Split layout (Form | Output) ---------- */
+    .app-main {
+      height: 100%;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 3fr 2fr; /* 60/40 split */
+    }
+    @media (max-width: 1100px) {
+      .app-main { grid-template-columns: 1fr; }
+    }
+
+    /* Left: Panels (scroll inside) */
+    .left {
+      border-right: 1px solid var(--border);
+      background: var(--panel);
+      display: grid;
+      grid-template-rows: 1fr auto; /* scrollable area + actions */
+      min-width: 0;
+    }
+    .panels {
+      overflow: auto;
+      padding: 0.7rem;
+    }
+
+    /* Right: Output (neutral styling, separate per tab) */
+    .right {
+      background: var(--panel);
+      display: grid;
+      grid-template-rows: 1fr;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .op {
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .op header {
+      padding: 0.6rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-2);
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+    }
+    .output-title { margin: 0; display: flex; gap: 0.5rem; align-items: center; }
+    .badge {
+      display: inline-block;
+      padding: 0.1rem 0.42rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #101010;
+      background: #9a9a9a;
+      border: 1px solid #7f7f7f;
+      letter-spacing: 0.03em;
+    }
+
+    .btn-download {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.38rem 0.65rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: var(--text);
+      background: #2a2a2a;
+      transition: transform 80ms ease, box-shadow 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+    .btn-download:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      background: #303030;
+    }
+
+    pre {
+      margin: 0;
+      padding: 0.7rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      overflow: auto;
+      background: #1f1f1f;
+      color: #d4d4d4;
+      border-left: 3px solid #3c3c3c;
+    }
+
+    /* ---------- Forms: compact + floating labels ---------- */
+    form { display: grid; gap: 0.6rem; }
+
+    /* Responsive multi-column grid */
+    .grid {
+      display: grid !important;
+      gap: 0.6rem;
+      align-items: start;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    @media (max-width: 1200px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr !important; }
+    }
+
+    .field {
+      position: relative;
+      display: grid;
+      gap: 0.22rem;
+      min-width: 0;
+    }
+
+    /* Floating label container */
+    .fl {
+      position: relative;
+    }
+    .fl input[type="text"] {
+      appearance: none;
+      width: 100%;
+      padding: 1.2rem 0.65rem 0.5rem;  /* space for label */
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: #1f1f1f;
+      color: var(--text);
+      outline: none;
+      font-size: 0.9rem;
+      transition: box-shadow 120ms ease, border-color 120ms ease, transform 80ms ease, background 120ms ease;
+    }
+
+    /* Fix: prevent placeholder overlapping with floating label */
+    .fl input::placeholder { color: transparent; opacity: 0; }
+    .fl input:focus::placeholder { color: #7f7f7f; opacity: 0.35; }
+
+    .fl input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--ring);
+      transform: translateY(-1px);
+      background: #232323;
+    }
+
+    /* Floating label */
+    .fl label {
+      position: absolute;
+      left: 0.6rem;
+      top: 0.6rem;
+      padding: 0 0.25rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #bfbfbf;
+      background: transparent;
+      pointer-events: none;
+      transform-origin: left top;
+      transition: transform 140ms ease, color 140ms ease, background 140ms ease;
+    }
+
+    /* Float when focused or has value */
+    .fl input:focus + label,
+    .fl input:not(:placeholder-shown) + label {
+      transform: translateY(-0.55rem) scale(0.9);
+      color: var(--primary);
+      background: var(--panel); /* subtle chip under text */
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .hint code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.76rem;
+      color: #c6c6c6;
+    }
+
+    /* Actions (sticky at bottom of left column) */
+    .actions {
+      display: flex;
+      gap: 0.6rem;
+      padding: 0.6rem 0.8rem;
+      border-top: 1px solid var(--border);
+      background: var(--panel-2);
+    }
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.5rem 0.75rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 80ms ease, box-shadow 120ms ease, background 120ms ease, border-color 120ms ease;
+      color: var(--text);
+      background: #2a2a2a;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      background: #303030;
+    }
+    .btn:active { transform: translateY(0); }
+    .btn-primary {
+      color: #0b1220;
+      background: linear-gradient(180deg, var(--primary), var(--primary-600));
+      border-color: color-mix(in oklab, var(--primary), black 18%);
+    }
+    .btn-ghost { background: transparent; }
+
+    /* Utility */
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="bar">
+      <div>
+        <h1 id="pageTitle" class="title">Generate MTA</h1>
+        <p class="subtitle">Floating labels · Compact multi-column form · 60/40 split · Neutral outputs.</p>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Form Tabs">
+        <button class="tab" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true" tabindex="0">Generate MTA</button>
+        <button class="tab" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1">Generate XS-Security</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main: Left (forms) | Right (distinct outputs) -->
+  <main class="app-main">
+    <!-- LEFT: Panels -->
+    <section class="left">
+      <div class="panels">
+        <!-- Panel 1: Generate MTA (15 compact fields + hints, floating labels) -->
+        <section id="panel-1" role="tabpanel" aria-labelledby="tab-1">
+          <form id="formA" novalidate>
+            <div class="grid">
+              <div class="field"><div class="fl"><input type="text" id="projectId" name="projectId" placeholder="projectsid" /><label for="projectId">Project ID</label></div><span class="hint">e.g. <code>projectsid</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="projectDescription" name="projectDescription" placeholder="A simple CAP Project" /><label for="projectDescription">Project Description</label></div><span class="hint">e.g. <code>A simple CAP Project</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="serviceModule" name="serviceModule" placeholder="projects-srv" /><label for="serviceModule">Service Module</label></div><span class="hint">e.g. <code>projects-srv</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="dbDeployerModule" name="dbDeployerModule" placeholder="projects-db-deployer" /><label for="dbDeployerModule">DB Deployer Module</label></div><span class="hint">e.g. <code>projects-db-deployer</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="destinationContentModule" name="destinationContentModule" placeholder="projects-destination-content" /><label for="destinationContentModule">Destination Content Module</label></div><span class="hint">e.g. <code>projects-destination-content</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="appContentModule" name="appContentModule" placeholder="projects-app-content" /><label for="appContentModule">App Content Module</label></div><span class="hint">e.g. <code>projects-app-content</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="uiModule" name="uiModule" placeholder="capsampleui5" /><label for="uiModule">UI Module</label></div><span class="hint">e.g. <code>capsampleui5</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="authResource" name="authResource" placeholder="projects-auth" /><label for="authResource">Auth Resource</label></div><span class="hint">e.g. <code>projects-auth</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="dbResource" name="dbResource" placeholder="projects-db" /><label for="dbResource">DB Resource</label></div><span class="hint">e.g. <code>projects-db</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="dbType" name="dbType" placeholder="postgres or hana" /><label for="dbType">DB Type</label></div><span class="hint">e.g. <code>postgres</code> or <code>hana</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="servicePlan" name="servicePlan" placeholder="trial" /><label for="servicePlan">Service Plan</label></div><span class="hint">e.g. <code>trial</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="destinationResource" name="destinationResource" placeholder="projects-destination-service" /><label for="destinationResource">Destination Resource</label></div><span class="hint">e.g. <code>projects-destination-service</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="htmlResource" name="htmlResource" placeholder="htmlRepoResource" /><label for="htmlResource">HTML Resource</label></div><span class="hint">e.g. <code>htmlRepoResource</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="sapCloudService" name="sapCloudService" placeholder="sapcloudproject" /><label for="sapCloudService">SAP Cloud Service</label></div><span class="hint">e.g. <code>sapcloudproject</code></span></div>
+              <div class="field"><div class="fl"><input type="text" id="appName" name="appName" placeholder="capsampleui5" /><label for="appName">App Name</label></div><span class="hint">e.g. <code>capsampleui5</code></span></div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">Save</button>
+              <button class="btn btn-ghost" type="reset">Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Panel 2: Generate XS-Security (UPDATED: 4 fields + array handling) -->
+        <section id="panel-2" role="tabpanel" aria-labelledby="tab-2" hidden>
+          <form id="formB" novalidate>
+            <div class="grid">
+              <div class="field">
+                <div class="fl">
+                  <input type="text" id="xsAppName" name="xsAppName" placeholder="projects-dev" />
+                  <label for="xsAppName">XS App Name</label>
+                </div>
+                <span class="hint">e.g. <code>projects-dev</code></span>
+              </div>
+
+              <div class="field">
+                <div class="fl">
+                  <input type="text" id="xsDescription" name="xsDescription" placeholder="Security profile of called application" />
+                  <label for="xsDescription">Description</label>
+                </div>
+                <span class="hint">e.g. <code>Security profile of called application</code></span>
+              </div>
+
+              <div class="field">
+                <div class="fl">
+                  <input type="text" id="tenantMode" name="tenantMode" placeholder="dedicated" />
+                  <label for="tenantMode">Tenant Mode</label>
+                </div>
+                <span class="hint">e.g. <code>dedicated</code></span>
+              </div>
+
+              <div class="field">
+                <div class="fl">
+                  <input type="text" id="scopeRoleConnection" name="scopeRoleConnection" placeholder="Viewer, Admin" />
+                  <label for="scopeRoleConnection">Scope Role Connection</label>
+                </div>
+                <span class="hint">e.g. <code>Viewer, Admin</code> (comma‑separated → becomes an array in JSON)</span>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">Save</button>
+              <button class="btn btn-ghost" type="reset">Reset</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <!-- RIGHT: Distinct Output Panels (neutral styling for both) -->
+    <aside class="right">
+      <!-- MTA Output (YAML) -->
+      <section id="output-mta" class="op">
+        <header>
+          <span class="output-title">
+            Output — Generate MTA <span class="badge">YAML</span>
+          </span>
+          <button id="downloadMTA" class="btn-download" type="button">Download</button>
+        </header>
+        <pre id="outputMTA"># Submit "Generate MTA" form to produce YAML</pre>
+      </section>
+
+      <!-- XS-Security Output (JSON) -->
+      <section id="output-xs" class="op" hidden>
+        <header>
+          <span class="output-title">
+            Output — Generate XS-Security <span class="badge">JSON</span>
+          </span>
+          <button id="downloadXS" class="btn-download" type="button">Download</button>
+        </header>
+        <pre id="outputXS">{ /* Submit "Generate XS-Security" form to produce JSON */ }</pre>
+      </section>
+    </aside>
+  </main>
+
+  <script>
+    /* ---------- Tabs + Title + Output visibility ---------- */
+    const pageTitle = document.getElementById('pageTitle');
+    const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+    const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+    const outMTA = document.getElementById('output-mta');
+    const outXS = document.getElementById('output-xs');
+
+    function activateTab(tab) {
+      tabs.forEach(t => {
+        const active = t === tab;
+        t.setAttribute('aria-selected', String(active));
+        t.tabIndex = active ? 0 : -1;
+      });
+
+      panels.forEach(p => { p.hidden = (p.id !== tab.getAttribute('aria-controls')); });
+
+      const isXS = tab.id === 'tab-2';
+      outMTA.hidden = isXS;
+      outXS.hidden = !isXS;
+
+      const titleText = isXS ? 'Generate XS-Security' : 'Generate MTA';
+      pageTitle.textContent = titleText;
+      document.title = titleText;
+
+      tab.focus();
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => activateTab(tab));
+      tab.addEventListener('keydown', (e) => {
+        const i = tabs.indexOf(tab);
+        if (e.key === 'ArrowRight') activateTab(tabs[(i + 1) % tabs.length]);
+        else if (e.key === 'ArrowLeft') activateTab(tabs[(i - 1 + tabs.length) % tabs.length]);
+      });
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const current = tabs.find(t => t.getAttribute('aria-selected') === 'true') || tabs[0];
+      activateTab(current);
+    });
+
+    /* ---------- Serialization ---------- */
+    function toYAML(obj) {
+      const lines = [];
+      for (const [key, raw] of Object.entries(obj)) {
+        let val = raw == null ? '' : String(raw);
+        const needsQuotes = /[:#\n]/.test(val) || /^\s|\s$/.test(val);
+        if (val === '') val = '""';
+        else if (needsQuotes) val = JSON.stringify(val);
+        lines.push(`${key}: ${val}`);
+      }
+      return lines.join('\n');
+    }
+    function toJSONPretty(obj) {
+      return JSON.stringify(obj, null, 2);
+    }
+
+    /* ---------- Form Utils ---------- */
+    function formDataToObject(form) {
+      const fd = new FormData(form);
+      const obj = {};
+      for (const el of form.elements) {
+        if (!el.name) continue;
+        if (!Object.prototype.hasOwnProperty.call(obj, el.name)) obj[el.name] = '';
+      }
+      for (const [k, v] of fd.entries()) obj[k] = v;
+      for (const k in obj) if (typeof obj[k] === 'string') obj[k] = obj[k].trim();
+      return obj;
+    }
+
+    function attachFormHandler({ formId, format, outputPreId, transform }) {
+      const form = document.getElementById(formId);
+      const outputPre = document.getElementById(outputPreId);
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        let data = formDataToObject(form);
+
+        // Optional per-form transformation (e.g., array parsing)
+        if (typeof transform === 'function') {
+          data = transform(data);
+        }
+
+        const content = format === 'yaml' ? toYAML(data) : toJSONPretty(data);
+        outputPre.textContent = content;
+      });
+
+      form.addEventListener('reset', () => {
+        outputPre.textContent = format === 'yaml'
+          ? '# Submit "Generate MTA" form to produce YAML'
+          : '{ /* Submit "Generate XS-Security" form to produce JSON */ }';
+      });
+    }
+
+    // MTA: YAML as-is
+    attachFormHandler({
+      formId: 'formA',
+      format: 'yaml',
+      outputPreId: 'outputMTA'
+    });
+
+    // XS-Security: JSON + parse Scope Role Connection into array
+    attachFormHandler({
+      formId: 'formB',
+      format: 'json',
+      outputPreId: 'outputXS',
+      transform: (data) => {
+        // Convert comma-separated "scopeRoleConnection" to array
+        const raw = data.scopeRoleConnection || '';
+        const arr = raw
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+        data.scopeRoleConnection = arr; // array in JSON
+        return data;
+      }
+    });
+
+    /* ---------- Download (per output panel) ---------- */
+    function wireDownload({ buttonId, preId, baseName, ext, mime }) {
+      const btn = document.getElementById(buttonId);
+      const pre = document.getElementById(preId);
+      btn.addEventListener('click', () => {
+        const content = pre.textContent || '';
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `${baseName}-${timestamp}.${ext}`;
+
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+          a.remove();
+        }, 0);
+      });
+    }
+
+    wireDownload({ buttonId: 'downloadMTA', preId: 'outputMTA', baseName: 'mta',          ext: 'yaml', mime: 'text/yaml' });
+    wireDownload({ buttonId: 'downloadXS',  preId: 'outputXS',  baseName: 'xs-security', ext: 'json', mime: 'application/json' });
+  </script>
+</body>
+</html>
