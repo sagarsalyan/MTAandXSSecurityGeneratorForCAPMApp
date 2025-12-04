@@ -451,8 +451,8 @@
                     Resource</label></div><span class="hint">e.g. <code>projects-destination-service</code></span>
               </div>
               <div class="field">
-                <div class="fl"><input type="text" id="htmlResource" name="htmlResource"
-                    placeholder="htmlRepoResource" /><label for="htmlResource">HTML Resource</label></div><span
+                <div class="fl"><input type="text" id="htmlRepoResource" name="htmlRepoResource"
+                    placeholder="htmlRepoResource" /><label for="htmlRepoResource">HTML Resource</label></div><span
                   class="hint">e.g. <code>htmlRepoResource</code></span>
               </div>
               <div class="field">
@@ -660,6 +660,271 @@
     }
 
     /* ---------- Form Utils ---------- */
+    function formDataToMTAObject(form) {
+      const fd = new FormData(form);
+      const obj = {};
+      for (const el of form.elements) {
+        if (!el.name) continue;
+        if (!Object.prototype.hasOwnProperty.call(obj, el.name)) obj[el.name] = '';
+      }
+      for (const [k, v] of fd.entries()) obj[k] = v;
+      for (const k in obj) if (typeof obj[k] === 'string') obj[k] = obj[k].trim();
+
+      // Dynamic DB resource and deployer module based on dbType
+      let dbResourceConfig;
+      let dbDeployerModuleConfig;
+
+      if (obj.dbType === 'hana') {
+        dbResourceConfig = {
+          'name': obj.dbResource,
+          'type': 'com.sap.xs.hdi-container',
+          'parameters': {
+            'service': 'hana',
+            'service-plan': obj.servicePlan || 'hdi-shared'
+          }
+        };
+        dbDeployerModuleConfig = {
+          'name': obj.dbDeployerModule,
+          'type': 'hdb',
+          'path': 'gen/db',
+          'requires': [{ 'name': obj.dbResource }],
+          'parameters': { 'buildpack': 'nodejs_buildpack' }
+        };
+      } else if (obj.dbType === 'postgres') {
+        dbResourceConfig = {
+          'name': obj.dbResource,
+          'type': 'org.cloudfoundry.managed-service',
+          'parameters': {
+            'service': 'postgresql-db',
+            'service-plan': obj.servicePlan || 'free'
+          }
+        };
+        dbDeployerModuleConfig = {
+          'name': obj.dbDeployerModule,
+          'type': 'nodejs',
+          'path': 'gen/pg',
+          'requires': [{ 'name': obj.dbResource }],
+          'parameters': { 'buildpack': 'nodejs_buildpack' }
+        };
+      } else {
+        return 'Invalid dbType. Use hana or postgres.';
+      }
+
+      let destContent = {
+        'name': obj.destinationContentModule,
+        'type': 'com.sap.application.content',
+        'requires': [
+          {
+            'name': destinationResource,
+            'parameters': {
+              'content-target': true
+            }
+          },
+          {
+            'name': obj.htmlRepoResource,
+            'parameters': {
+              'service-key': {
+                'name': `${obj.htmlRepoResource}-key`
+              }
+            }
+          },
+          {
+            'name': obj.authResource,
+            'parameters': {
+              'service-key': {
+                'name': `${obj.authResource}-key`
+              }
+            }
+          }
+        ],
+        'parameters': {
+          'content': {
+            'instance': {
+              'destinations': [
+                {
+                  'Name': `${obj.htmlRepoResource}-service`,
+                  'ServiceInstanceName': `${obj.htmlRepoResource}-service`,
+                  'ServiceKeyName': `${obj.htmlRepoResource}-key`,
+                  'sap.cloud.service': obj.sapCloudService
+                },
+                {
+                  'Authentication': 'OAuth2UserTokenExchange',
+                  'Name': `${obj.authResource}-service`,
+                  'ServiceInstanceName': `${obj.authResource}-service`,
+                  'ServiceKeyName': `${obj.authResource}-key`,
+                  'sap.cloud.service': obj.sapCloudService
+                }
+              ],
+              'existing_destinations_policy': 'update'
+            }
+          }
+        },
+        'build-parameters': {
+          'no-source': true
+        }
+      }
+
+      let appContent = {
+        'name': obj.appContentModule,
+        'type': 'com.sap.application.content',
+        'path': '.',
+        'requires': [
+          {
+            'name': obj.htmlRepoResource,
+            'parameters': {
+              'content-target': true
+            }
+          }
+        ],
+        'build-parameters': {
+          'build-result': 'resources',
+          'requires': [
+            {
+              'artifacts': [`${obj.appName}.zip`],
+              'name': obj.uiModule,
+              'target-path': 'resources/'
+            }
+          ]
+        }
+      }
+
+      let UIModule = {
+        'name': obj.uiModule,
+        'type': 'html5',
+        'path': `app/${obj.appName}`,
+        'build-parameters': {
+          'build-result': 'dist',
+          'builder': 'custom',
+          'commands': ['npm install', 'npm run build:cf'],
+          'supported-platforms': []
+        }
+      }
+
+      let destResource = {
+        'name': obj.destinationResource,
+        'type': 'org.cloudfoundry.managed-service',
+        'parameters': {
+          'config': {
+            'HTML5Runtime_enabled': true,
+            'init_data': {
+              'instance': {
+                'destinations': [
+                  {
+                    'Authentication': 'NoAuthentication',
+                    'Name': 'ui5',
+                    'ProxyType': 'Internet',
+                    'Type': 'HTTP',
+                    'URL': 'https://ui5.sap.com'
+                  },
+                  {
+                    'Authentication': 'NoAuthentication',
+                    'HTML5.DynamicDestination': true,
+                    'HTML5.ForwardAuthToken': true,
+                    'Name': 'srv-api',
+                    'ProxyType': 'Internet',
+                    'Type': 'HTTP',
+                    'URL': '~{srv-api/srv-url}'
+                  }
+                ],
+                'existing_destinations_policy': 'update'
+              }
+            },
+            'version': '1.0.0'
+          },
+          'service': 'destination',
+          'service-name': obj.destinationResource,
+          'service-plan': 'lite'
+        },
+        'requires': [
+          {
+            'name': 'srv-api'
+          }
+        ]
+      }
+
+      let htmlResource = {
+        'name': obj.htmlRepoResource,
+        'type': 'org.cloudfoundry.managed-service',
+        'parameters': {
+          'service': 'html5-apps-repo',
+          'service-name': `${obj.htmlRepoResource}-service`,
+          'service-plan': 'app-host'
+        }
+      }
+
+      // Build MTA structure dynamically
+      const mta = {
+        '_schema-version': '3.3.0',
+        'ID': obj.projectId,
+        'description': obj.projectDescription,
+        'version': '1.0.0',
+        'build-parameters': {
+          'before-all': [
+            {
+              'builder': 'custom',
+              'commands': ['npm ci', 'npx cds build --production']
+            }
+          ]
+        },
+        'modules': [
+          {
+            'name': obj.srvModule,
+            'type': 'nodejs',
+            'path': 'gen/srv',
+            'requires': [
+              { 'name': obj.authResource },
+              { 'name': obj.dbResource }
+            ],
+            'provides': [
+              {
+                'name': 'srv-api',
+                'properties': {
+                  'srv-url': '${default-url}'
+                }
+              }
+            ],
+            'parameters': {
+              'buildpack': 'nodejs_buildpack',
+              'instances': 1
+            },
+            'build-parameters': {
+              'builder': 'npm-ci'
+            }
+          },
+          dbDeployerModuleConfig,
+        ],
+        resources: [
+          {
+            'name': obj.authResource,
+            'type': 'org.cloudfoundry.managed-service',
+            'parameters': {
+              'config': { 
+                'tenant-mode': 'dedicated', 
+                'xsappname': `${obj.projectId}` },
+              'path': './xs-security.json',
+              'service': 'xsuaa',
+              'service-plan': 'application'
+            }
+          },
+          dbResourceConfig,
+        ]
+      };
+
+      obj.destinationContentModule ? mta['modules'].push(destContent) : "";
+      obj.appContentModule ? mta['modules'].push(appContent) : "";
+      obj.uiModule ? mta['modules'].push(UIModule) : "";
+
+      obj.destinationResource ? mta['resources'].push(destResource) : "";
+      obj.htmlRepoResource ? mta['resources'].push(htmlResource) : "";
+      obj.uiModule ? mta.parameters = { 
+        'deploy_mode': 'html5-repo', 
+        'enable-parallel-deployments': true 
+      } : mta.parameters = { 
+        'enable-parallel-deployments': true 
+      }
+
+      return mta;
+    }
     function formDataToObject(form) {
       const fd = new FormData(form);
       const obj = {};
@@ -678,7 +943,7 @@
 
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        let data = formDataToObject(form);
+        let data = formId === 'formA' ? formDataToMTAObject(form) : formDataToObject(form);
 
         // Optional per-form transformation (e.g., array parsing)
         if (typeof transform === 'function') {
