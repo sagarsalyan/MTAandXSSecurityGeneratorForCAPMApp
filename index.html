@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <title>Generate MTA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
+
   <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 
   <style>
@@ -364,6 +364,51 @@
       background: transparent;
     }
 
+
+    /* Small icon button (for inline tools next to inputs) */
+    .icon-btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: #2a2a2a;
+      color: var(--text);
+      border-radius: 6px;
+      height: auto;
+      /* small, aligns with compact inputs */
+      min-width: 34px;
+      padding: 0 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      transition: transform 80ms ease, box-shadow 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+    }
+
+    .icon-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      background: #303030;
+    }
+
+    .icon-btn:active {
+      transform: translateY(0);
+    }
+
+    .icon-btn .icon {
+      width: 15px;
+      height: 15px;
+      display: inline-block;
+      line-height: 0;
+    }
+
+    /* Optional: keep the label text subtle and short */
+    .icon-btn .txt {
+      font-size: 0.78rem;
+      font-weight: 700;
+      opacity: 0.9;
+    }
+
+
     /* Utility */
     [hidden] {
       display: none !important;
@@ -397,10 +442,33 @@
         <section id="panel-1" role="tabpanel" aria-labelledby="tab-1">
           <form id="formA" novalidate>
             <div class="grid">
+
+
               <div class="field">
-                <div class="fl"><input type="text" id="projectId" name="projectId" placeholder="projectsid" /><label
-                    for="projectId">Project ID</label></div><span class="hint">e.g. <code>projectsid</code></span>
+                <div class="fl" style="display:flex; gap:0.5rem; align-items:stretch;">
+                  <!-- Input (floating label) -->
+                  <div style="flex:1; position:relative;">
+                    <input type="text" id="projectId" name="projectId" placeholder="projectsid" />
+                    <label for="projectId">Project ID</label>
+                  </div>
+
+                  <!-- Small icon button -->
+                  <button id="applyTemplateBtn" class="icon-btn" type="button"
+                    title="Fill other fields using this Project ID"
+                    aria-label="Fill other fields using this Project ID">
+                    <!-- Magic wand icon (inline SVG, no external deps) -->
+                    <span class="icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+                        <path d="M13 3L4 14h6l-1 7 9-11h-6l1-7z"/>
+                      </svg>
+                    </span>
+                    <span class="txt">Fill</span>
+                  </button>
+                </div>
+                <span class="hint">e.g. <code>projectsid</code></span>
               </div>
+
+
               <div class="field">
                 <div class="fl"><input type="text" id="projectDescription" name="projectDescription"
                     placeholder="A simple CAP Project" /><label for="projectDescription">Project Description</label>
@@ -685,15 +753,15 @@
             'instance': {
               'destinations': [
                 {
-                  'Name': `${obj.htmlRepoResource}-service`,
-                  'ServiceInstanceName': `${obj.htmlRepoResource}-service`,
+                  'Name': `${obj.projectId}_approuter_${obj.htmlRepoResource}`,
+                  'ServiceInstanceName': `${obj.projectId}-html5-app-host-service`,
                   'ServiceKeyName': `${obj.htmlRepoResource}-key`,
                   'sap.cloud.service': obj.sapCloudService
                 },
                 {
                   'Authentication': 'OAuth2UserTokenExchange',
-                  'Name': `${obj.authResource}-service`,
-                  'ServiceInstanceName': `${obj.authResource}-service`,
+                  'Name': `${obj.projectId}_approuter_${obj.authResource}`,
+                  'ServiceInstanceName': `${obj.projectId}-xsuaa-service`,
                   'ServiceKeyName': `${obj.authResource}-key`,
                   'sap.cloud.service': obj.sapCloudService
                 }
@@ -790,7 +858,7 @@
         'type': 'org.cloudfoundry.managed-service',
         'parameters': {
           'service': 'html5-apps-repo',
-          'service-name': `${obj.htmlRepoResource}-service`,
+          'service-name': `${obj.projectId}-html5-app-host-service`,
           'service-plan': 'app-host'
         }
       }
@@ -841,11 +909,12 @@
             'name': obj.authResource,
             'type': 'org.cloudfoundry.managed-service',
             'parameters': {
-              'config': { 
-                'tenant-mode': 'dedicated', 
-                'xsappname': `${obj.projectId}` },
+              'config': {
+                'tenant-mode': 'dedicated',
+                'xsappname': `${obj.projectId}`
+              },
               'path': './xs-security.json',
-              'service': 'xsuaa',
+              'service': `${obj.projectId}-xsuaa-service`,
               'service-plan': 'application'
             }
           },
@@ -859,11 +928,11 @@
 
       obj.destinationResource ? mta['resources'].push(destResource) : "";
       obj.htmlRepoResource ? mta['resources'].push(htmlResource) : "";
-      obj.uiModule ? mta.parameters = { 
-        'deploy_mode': 'html5-repo', 
-        'enable-parallel-deployments': true 
-      } : mta.parameters = { 
-        'enable-parallel-deployments': true 
+      obj.uiModule ? mta.parameters = {
+        'deploy_mode': 'html5-repo',
+        'enable-parallel-deployments': true
+      } : mta.parameters = {
+        'enable-parallel-deployments': true
       }
 
       return mta;
@@ -953,6 +1022,58 @@
 
     wireDownload({ buttonId: 'downloadMTA', preId: 'outputMTA', baseName: 'mta', ext: 'yaml', mime: 'text/yaml' });
     wireDownload({ buttonId: 'downloadXS', preId: 'outputXS', baseName: 'xs-security', ext: 'json', mime: 'application/json' });
+
+
+    function wireApplyTemplate() {
+      const btn = document.getElementById('applyTemplateBtn');
+      if (!btn) return;
+
+      btn.addEventListener('click', () => {
+        const idInput = document.getElementById('projectId');
+        let pid = (idInput?.value || '').trim();
+
+        if (!pid) {
+          alert('Please enter Project ID first.');
+          idInput?.focus();
+          return;
+        }
+
+        // Optional normalization (kebab-case). Uncomment if you want to enforce:
+        // pid = pid.toLowerCase().replace(/[^a-z0-9\-]/g, '-').replace(/--+/g, '-').replace(/^-|-$/g, '');
+
+        // Templates to auto-fill (matching your examples)
+        const template = {
+          projectDescription: 'A simple CAP Project',
+          serviceModule: `${pid}-srv`,
+          dbDeployerModule: `${pid}-db-deployer`,
+          destinationContentModule: `${pid}-destination-content`,
+          appContentModule: `${pid}-app-content`,
+          uiModule: 'capsampleui5',
+          authResource: `uaa_${pid}`,
+          dbResource: `${pid}-db`,
+          dbType: 'postgres',                // or 'hana'
+          servicePlan: 'trial',
+          destinationResource: `${pid}-destination-service`,
+          htmlRepoResource: `${pid}_html_repo_host`,
+          sapCloudService: `${pid}-approuter`,
+          appName: 'capsampleui5'
+        };
+
+        const setVal = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.value = value;
+            // Ensure floating label floats (Safari/WebKit)
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        };
+
+        Object.entries(template).forEach(([key, value]) => setVal(key, value));
+      });
+    }
+
+    wireApplyTemplate();
+
   </script>
 </body>
 
