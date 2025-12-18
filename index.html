@@ -422,7 +422,6 @@
     <div class="bar">
       <div>
         <h1 id="pageTitle" class="title">Generate MTA</h1>
-        <p class="subtitle">Floating labels · Compact multi-column form · 60/40 split · Neutral outputs.</p>
       </div>
       <div class="tabs" role="tablist" aria-label="Form Tabs">
         <button class="tab" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true" tabindex="0">Generate
@@ -579,8 +578,8 @@
 
               <div class="field">
                 <div class="fl">
-                  <input type="text" id="scopeRoleConnection" name="scopeRoleConnection" placeholder="Viewer, Admin" />
-                  <label for="scopeRoleConnection">Scope Role Connection</label>
+                  <input type="text" id="scopeRoleCollection" name="scopeRoleCollection" placeholder="Viewer, Admin" />
+                  <label for="scopeRoleCollection">Scope Role Collection</label>
                 </div>
                 <span class="hint">e.g. <code>Viewer, Admin</code> (comma‑separated → becomes an array in JSON)</span>
               </div>
@@ -967,21 +966,55 @@
       }
       for (const [k, v] of fd.entries()) obj[k] = v;
       for (const k in obj) if (typeof obj[k] === 'string') obj[k] = obj[k].trim();
-      return obj;
+
+
+      // Dynamic scopes with $XSAPPNAME placeholder
+      const dynamicScopes = obj.scopeRoleCollection ? obj.scopeRoleCollection.split(',').map(role => ({
+          name: `$XSAPPNAME.${role}`,
+          description: `${role} access`
+      })) : [];
+
+      // Default scope
+      const defaultScope = { name: "uaa.user", description: "UAA" };
+
+      // Combine scopes
+      const scopes = [...dynamicScopes, defaultScope];
+
+      // Dynamic role templates
+      const dynamicRoleTemplates = obj.scopeRoleCollection ? obj.scopeRoleCollection.split(',').map(role => ({
+          name: role,
+          description: `${role} role`,
+          "scope-references": [`$XSAPPNAME.${role}`]
+      })) : [];
+
+      // Default role template
+      const defaultRoleTemplate = {
+          name: "Token_Exchange",
+          description: "UAA",
+          "scope-references": ["uaa.user"]
+      };
+
+      // Combine role templates
+      const roleTemplates = [...dynamicRoleTemplates, defaultRoleTemplate];
+
+      // Final config
+      const config = {
+          xsappname: obj.xsAppName,
+          "tenant-mode": obj.tenantMode,
+          description: obj.xsDescription,
+          scopes: scopes,
+          "role-templates": roleTemplates
+      };
+      return config;
     }
 
-    function attachFormHandler({ formId, format, outputPreId, transform }) {
+    function attachFormHandler({ formId, format, outputPreId}) {
       const form = document.getElementById(formId);
       const outputPre = document.getElementById(outputPreId);
 
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         let data = formId === 'formA' ? formDataToMTAObject(form) : formDataToObject(form);
-
-        // Optional per-form transformation (e.g., array parsing)
-        if (typeof transform === 'function') {
-          data = transform(data);
-        }
 
         const content = format === 'yaml' ? toYAML(data) : toJSONPretty(data);
         outputPre.textContent = content;
@@ -1001,21 +1034,11 @@
       outputPreId: 'outputMTA'
     });
 
-    // XS-Security: JSON + parse Scope Role Connection into array
+    // XS-Security: JSON + parse Scope Role Collection into array
     attachFormHandler({
       formId: 'formB',
       format: 'json',
-      outputPreId: 'outputXS',
-      transform: (data) => {
-        // Convert comma-separated "scopeRoleConnection" to array
-        const raw = data.scopeRoleConnection || '';
-        const arr = raw
-          .split(',')
-          .map(s => s.trim())
-          .filter(s => s.length > 0);
-        data.scopeRoleConnection = arr; // array in JSON
-        return data;
-      }
+      outputPreId: 'outputXS'
     });
 
     /* ---------- Download (per output panel) ---------- */
