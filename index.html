@@ -495,10 +495,6 @@
                 <span class="hint">e.g. <code>projects-app-content</code></span>
               </div>
               <div class="field">
-                <div class="fl"><input type="text" id="uiModule" name="uiModule" placeholder="capsampleui5" /><label
-                    for="uiModule">UI Module</label></div><span class="hint">e.g. <code>capsampleui5</code></span>
-              </div>
-              <div class="field">
                 <div class="fl"><input type="text" id="authResource" name="authResource"
                     placeholder="projects-auth" /><label for="authResource">Auth Resource</label></div><span
                   class="hint">e.g. <code>projects-auth</code></span>
@@ -532,13 +528,21 @@
                   class="hint">e.g. <code>sapcloudproject</code></span>
               </div>
               <div class="field">
-                <div class="fl"><input type="text" id="appName" name="appName" placeholder="capsampleui5" /><label
-                    for="appName">App Name</label></div><span class="hint">e.g. <code>capsampleui5</code></span>
+                <div class="fl"><input type="text" id="uiModule" name="uiModule" placeholder="capsampleui5" /><label
+                    for="uiModule">UI Module</label></div><span class="hint">e.g. <code>capsampleui5</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="zipName" name="zipName" placeholder="capsampleui5" /><label
+                    for="uiModule">UI5 Archive Name</label></div><span class="hint">e.g. <code>comcapsampleui5 -- Check ui5-deploy.yaml -> archiveName</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="appName" name="appName" placeholder="cap-sample-ui5" /><label
+                    for="appName">App Name</label></div><span class="hint">e.g. <code>cap-sample-ui5 -- Folder name of UI5 app</code></span>
               </div>
             </div>
 
             <div class="actions">
-              <button class="btn btn-primary" type="submit">Save</button>
+              <button class="btn btn-primary" type="submit">Generate</button>
               <button class="btn btn-ghost" type="reset">Reset</button>
             </div>
           </form>
@@ -698,8 +702,16 @@
           'name': obj.dbDeployerModule,
           'type': 'hdb',
           'path': 'gen/db',
-          'requires': [{ 'name': obj.dbResource }],
-          'parameters': { 'buildpack': 'nodejs_buildpack' }
+          'requires': [{ 'name': obj.dbResource },{ 'name': obj.authResource }],
+          'parameters': { 
+            'buildpack': 'nodejs_buildpack',
+            'no-route': true,
+            'no-start': true,
+            'tasks':[{
+              'command': 'npm start',
+              'name': 'deploy-to-postgresql',
+            }]
+          }
         };
       } else if (obj.dbType === 'postgres') {
         dbResourceConfig = {
@@ -714,8 +726,16 @@
           'name': obj.dbDeployerModule,
           'type': 'nodejs',
           'path': 'gen/pg',
-          'requires': [{ 'name': obj.dbResource }],
-          'parameters': { 'buildpack': 'nodejs_buildpack' }
+          'requires': [{ 'name': obj.dbResource },{ 'name': obj.authResource }],
+          'parameters': { 
+            'buildpack': 'nodejs_buildpack',
+            'no-route': true,
+            'no-start': true,
+            'tasks':[{
+              'command': 'npm start',
+              'name': 'deploy-to-postgresql',
+            }]
+          }
         };
       } else {
         return 'Invalid dbType. Use hana or postgres.';
@@ -791,7 +811,7 @@
           'build-result': 'resources',
           'requires': [
             {
-              'artifacts': [`${obj.appName}.zip`],
+              'artifacts': [`${obj.zipName}.zip`],
               'name': obj.uiModule,
               'target-path': 'resources/'
             }
@@ -911,10 +931,11 @@
             'parameters': {
               'config': {
                 'tenant-mode': 'dedicated',
-                'xsappname': `${obj.projectId}`
+                'xsappname': `${obj.projectId}-\${org}-\${space}'`
               },
               'path': './xs-security.json',
-              'service': `${obj.projectId}-xsuaa-service`,
+              'service': 'xsuaa',
+              'service-name': `${obj.projectId}-xsuaa-service`,
               'service-plan': 'application'
             }
           },
@@ -1048,7 +1069,6 @@
           dbDeployerModule: `${pid}-db-deployer`,
           destinationContentModule: `${pid}-destination-content`,
           appContentModule: `${pid}-app-content`,
-          uiModule: 'capsampleui5',
           authResource: `uaa_${pid}`,
           dbResource: `${pid}-db`,
           dbType: 'postgres',                // or 'hana'
@@ -1056,7 +1076,9 @@
           destinationResource: `${pid}-destination-service`,
           htmlRepoResource: `${pid}_html_repo_host`,
           sapCloudService: `${pid}-approuter`,
-          appName: 'capsampleui5'
+          uiModule: `${pid}ui5`,
+          zipName: `com${pid}ui5`,
+          appName: `${pid}-ui5`
         };
 
         const setVal = (id, value) => {
