@@ -1092,10 +1092,14 @@
               },
               'path': './xs-security.json',
               'service': 'xsuaa',
+              'service-name': `${obj.authResource}-service`,
               'service-plan': 'application'
             }
           }
-        ]
+        ],
+        'parameters': { 
+          'enable-parallel-deployments': true
+        }
       };
       return mtatmp2
     }
