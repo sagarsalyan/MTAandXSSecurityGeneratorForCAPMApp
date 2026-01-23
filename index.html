@@ -311,6 +311,15 @@
       /* subtle chip under text */
     }
 
+    /* Float when focused or has value */
+    .fl select:focus+label,
+    .fl select:not(:placeholder-shown)+label {
+      transform: translateY(-0.55rem) scale(0.9);
+      color: var(--primary);
+      background: var(--panel);
+      /* subtle chip under text */
+    }
+
     .hint {
       font-size: 0.78rem;
       color: var(--muted);
@@ -458,7 +467,7 @@
                     <!-- Magic wand icon (inline SVG, no external deps) -->
                     <span class="icon" aria-hidden="true">
                       <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
-                        <path d="M13 3L4 14h6l-1 7 9-11h-6l1-7z"/>
+                        <path d="M13 3L4 14h6l-1 7 9-11h-6l1-7z" />
                       </svg>
                     </span>
                     <span class="txt">Fill</span>
@@ -478,10 +487,45 @@
                     placeholder="projects-srv" /><label for="serviceModule">Service Module</label></div><span
                   class="hint">e.g. <code>projects-srv</code></span>
               </div>
+
+              <div class="field">
+                <div class="fl">
+                  <select id="dbType" name="dbType"
+                    style="width:100%; padding:1.2rem 0.65rem 0.5rem; border-radius:7px; border:1px solid var(--border); background:#1f1f1f; color:var(--text); font-size:0.9rem;">
+                    <option value="NA">NA (No Database)</option>
+                    <option value="postgres">PostgreSQL</option>
+                    <option value="hana">SAP HANA</option>
+                  </select>
+                  <label for="dbType">DB Type</label>
+                </div>
+                <span class="hint">Choose NA, postgres, or hana</span>
+              </div>
+
+              <div class="field">
+                <div class="fl">
+                  <select id="isUiNeeded" name="isUiNeeded"
+                    style="width:100%; padding:1.2rem 0.65rem 0.5rem; border-radius:7px; border:1px solid var(--border); background:#1f1f1f; color:var(--text); font-size:0.9rem;">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                  <label for="isUiNeeded">Is UI needed?</label>
+                </div>
+                <span class="hint">Select Yes or No</span>
+              </div>
+
+
               <div class="field">
                 <div class="fl"><input type="text" id="dbDeployerModule" name="dbDeployerModule"
                     placeholder="projects-db-deployer" /><label for="dbDeployerModule">DB Deployer Module</label></div>
                 <span class="hint">e.g. <code>projects-db-deployer</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="dbResource" name="dbResource" placeholder="projects-db" /><label
+                    for="dbResource">DB Resource</label></div><span class="hint">e.g. <code>projects-db</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="servicePlan" name="servicePlan" placeholder="trial" /><label
+                    for="servicePlan">Service Plan</label></div><span class="hint">e.g. <code>trial</code></span>
               </div>
               <div class="field">
                 <div class="fl"><input type="text" id="destinationContentModule" name="destinationContentModule"
@@ -489,32 +533,14 @@
                     Content Module</label></div><span class="hint">e.g. <code>projects-destination-content</code></span>
               </div>
               <div class="field">
-                <div class="fl"><input type="text" id="appContentModule" name="appContentModule"
-                    placeholder="projects-app-content" /><label for="appContentModule">App Content Module</label></div>
-                <span class="hint">e.g. <code>projects-app-content</code></span>
-              </div>
-              <div class="field">
-                <div class="fl"><input type="text" id="authResource" name="authResource"
-                    placeholder="projects-auth" /><label for="authResource">Auth Resource</label></div><span
-                  class="hint">e.g. <code>projects-auth</code></span>
-              </div>
-              <div class="field">
-                <div class="fl"><input type="text" id="dbResource" name="dbResource" placeholder="projects-db" /><label
-                    for="dbResource">DB Resource</label></div><span class="hint">e.g. <code>projects-db</code></span>
-              </div>
-              <div class="field">
-                <div class="fl"><input type="text" id="dbType" name="dbType" placeholder="postgres or hana" /><label
-                    for="dbType">DB Type</label></div><span class="hint">e.g. <code>postgres</code> or
-                  <code>hana</code></span>
-              </div>
-              <div class="field">
-                <div class="fl"><input type="text" id="servicePlan" name="servicePlan" placeholder="trial" /><label
-                    for="servicePlan">Service Plan</label></div><span class="hint">e.g. <code>trial</code></span>
-              </div>
-              <div class="field">
                 <div class="fl"><input type="text" id="destinationResource" name="destinationResource"
                     placeholder="projects-destination-service" /><label for="destinationResource">Destination
                     Resource</label></div><span class="hint">e.g. <code>projects-destination-service</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="appContentModule" name="appContentModule"
+                    placeholder="projects-app-content" /><label for="appContentModule">App Content Module</label></div>
+                <span class="hint">e.g. <code>projects-app-content</code></span>
               </div>
               <div class="field">
                 <div class="fl"><input type="text" id="htmlRepoResource" name="htmlRepoResource"
@@ -522,21 +548,28 @@
                   class="hint">e.g. <code>htmlRepoResource</code></span>
               </div>
               <div class="field">
-                <div class="fl"><input type="text" id="sapCloudService" name="sapCloudService"
-                    placeholder="sapcloudproject" /><label for="sapCloudService">SAP Cloud Service</label></div><span
-                  class="hint">e.g. <code>sapcloudproject</code></span>
-              </div>
-              <div class="field">
                 <div class="fl"><input type="text" id="uiModule" name="uiModule" placeholder="capsampleui5" /><label
                     for="uiModule">UI Module</label></div><span class="hint">e.g. <code>capsampleui5</code></span>
               </div>
               <div class="field">
                 <div class="fl"><input type="text" id="zipName" name="zipName" placeholder="capsampleui5" /><label
-                    for="uiModule">UI5 Archive Name</label></div><span class="hint">e.g. <code>comcapsampleui5 -- Check ui5-deploy.yaml -> archiveName</code></span>
+                    for="uiModule">UI5 Archive Name</label></div><span class="hint">e.g.
+                  <code>comcapsampleui5 -- Check ui5-deploy.yaml -> archiveName</code></span>
               </div>
               <div class="field">
                 <div class="fl"><input type="text" id="appName" name="appName" placeholder="cap-sample-ui5" /><label
-                    for="appName">App Name</label></div><span class="hint">e.g. <code>cap-sample-ui5 -- Folder name of UI5 app</code></span>
+                    for="appName">App Name</label></div><span class="hint">e.g.
+                  <code>cap-sample-ui5 -- Folder name of UI5 app</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="sapCloudService" name="sapCloudService"
+                    placeholder="sapcloudproject" /><label for="sapCloudService">SAP Cloud Service</label></div><span
+                  class="hint">e.g. <code>sapcloudproject</code></span>
+              </div>
+              <div class="field">
+                <div class="fl"><input type="text" id="authResource" name="authResource"
+                    placeholder="projects-auth" /><label for="authResource">Auth Resource</label></div><span
+                  class="hint">e.g. <code>projects-auth</code></span>
               </div>
             </div>
 
@@ -586,7 +619,7 @@
             </div>
 
             <div class="actions">
-              <button class="btn btn-primary" type="submit">Save</button>
+              <button class="btn btn-primary" type="submit">Generate</button>
               <button class="btn btn-ghost" type="reset">Reset</button>
             </div>
           </form>
@@ -602,7 +635,33 @@
           <span class="output-title">
             Output — Generate MTA <span class="badge">YAML</span>
           </span>
-          <button id="downloadMTA" class="btn-download" type="button">Download</button>
+
+          <button id="copyBtn" class="btn-download" type="button" title="Copy" aria-label="Copy">
+            <!-- Copy icon (inline SVG, no external deps) -->
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <!-- Clipboard outline -->
+                <path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <!-- Clipboard top (clip) -->
+                <rect x="9" y="2" width="6" height="4" rx="1" ry="1" />
+              </svg>
+            </span>
+          </button>
+
+          <button id="downloadMTA" class="btn-download" type="button" title="Download" aria-label="Download">
+            <!-- Download icon (inline SVG) -->
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                <!-- Solid tray -->
+                <path d="M4 18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3h-2v3H6v-3H4v3z" />
+                <!-- Solid downward arrow -->
+                <path
+                  d="M12 3a1 1 0 0 1 1 1v8.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L11 12.586V4a1 1 0 0 1 1-1z" />
+              </svg>
+            </span>
+          </button>
+
         </header>
         <pre id="outputMTA"># Submit "Generate MTA" form to produce YAML</pre>
       </section>
@@ -684,6 +743,28 @@
       for (const [k, v] of fd.entries()) obj[k] = v;
       for (const k in obj) if (typeof obj[k] === 'string') obj[k] = obj[k].trim();
 
+      var mtatmp;
+      if (obj.dbType === 'NA') {
+        if (obj.isUiNeeded === 'no') {
+          mtatmp = getMTANoDBNoUI(obj);
+        } else if (obj.isUiNeeded === 'yes') {
+          mtatmp = getMTANoDBYesUI(obj);
+        }
+      } else if (obj.dbType === 'hana') {
+        if (obj.isUiNeeded === 'no') {
+
+        } else if (obj.isUiNeeded === 'yes') {
+
+        }
+      } else if (obj.dbType === 'postgres') {
+        if (obj.isUiNeeded === 'no') {
+
+        } else if (obj.isUiNeeded === 'yes') {
+
+        }
+      }
+
+      return mtatmp;
       // Dynamic DB resource and deployer module based on dbType
       let dbResourceConfig;
       let dbDeployerModuleConfig;
@@ -701,12 +782,12 @@
           'name': obj.dbDeployerModule,
           'type': 'hdb',
           'path': 'gen/db',
-          'requires': [{ 'name': obj.dbResource },{ 'name': obj.authResource }],
-          'parameters': { 
+          'requires': [{ 'name': obj.dbResource }, { 'name': obj.authResource }],
+          'parameters': {
             'buildpack': 'nodejs_buildpack',
             'no-route': true,
             'no-start': true,
-            'tasks':[{
+            'tasks': [{
               'command': 'npm start',
               'name': 'deploy-to-postgresql',
             }]
@@ -725,17 +806,20 @@
           'name': obj.dbDeployerModule,
           'type': 'nodejs',
           'path': 'gen/pg',
-          'requires': [{ 'name': obj.dbResource },{ 'name': obj.authResource }],
-          'parameters': { 
+          'requires': [{ 'name': obj.dbResource }, { 'name': obj.authResource }],
+          'parameters': {
             'buildpack': 'nodejs_buildpack',
             'no-route': true,
             'no-start': true,
-            'tasks':[{
+            'tasks': [{
               'command': 'npm start',
               'name': 'deploy-to-postgresql',
             }]
           }
         };
+      } else if (obj.dbType === 'NA') {
+        // No DB selected
+
       } else {
         return 'Invalid dbType. Use hana or postgres.';
       }
@@ -773,7 +857,7 @@
               'destinations': [
                 {
                   'Name': `${obj.projectId}_approuter_${obj.htmlRepoResource}`,
-                  'ServiceInstanceName': `${obj.projectId}-html5-app-host-service`,
+                  'ServiceInstanceName': `${obj.htmlRepoResource}`,
                   'ServiceKeyName': `${obj.htmlRepoResource}-key`,
                   'sap.cloud.service': obj.sapCloudService
                 },
@@ -877,7 +961,6 @@
         'type': 'org.cloudfoundry.managed-service',
         'parameters': {
           'service': 'html5-apps-repo',
-          'service-name': `${obj.projectId}-html5-app-host-service`,
           'service-plan': 'app-host'
         }
       }
@@ -957,6 +1040,266 @@
 
       return mta;
     }
+
+    function getMTANoDBNoUI(obj) {
+      // Implementation for MTA without DB and UI
+      const mtatmp2 = {
+        '_schema-version': '3.3.0',
+        'ID': obj.projectId,
+        'description': obj.projectDescription,
+        'version': '1.0.0',
+        'build-parameters': {
+          'before-all': [
+            {
+              'builder': 'custom',
+              'commands': ['npm ci', 'npx cds build --production']
+            }
+          ]
+        },
+        'modules': [
+          {
+            'name': obj.serviceModule,
+            'type': 'nodejs',
+            'path': 'gen/srv',
+            'requires': [
+              { 'name': obj.authResource }
+            ],
+            'provides': [
+              {
+                'name': 'srv-api',
+                'properties': {
+                  'srv-url': '${default-url}'
+                }
+              }
+            ],
+            'parameters': {
+              'buildpack': 'nodejs_buildpack',
+              'instances': 1
+            },
+            'build-parameters': {
+              'builder': 'npm-ci'
+            }
+          }
+        ],
+        resources: [
+          {
+            'name': obj.authResource,
+            'type': 'org.cloudfoundry.managed-service',
+            'parameters': {
+              'config': {
+                'tenant-mode': 'dedicated',
+                'xsappname': `${obj.projectId}-\${org}-\${space}`
+              },
+              'path': './xs-security.json',
+              'service': 'xsuaa',
+              'service-plan': 'application'
+            }
+          }
+        ]
+      };
+      return mtatmp2
+    }
+
+    function getMTANoDBYesUI(obj) {
+      const mtatmp2 = {
+        '_schema-version': '3.3.0',
+        'ID': obj.projectId,
+        'description': obj.projectDescription,
+        'version': '1.0.0',
+        'build-parameters': {
+          'before-all': [
+            {
+              'builder': 'custom',
+              'commands': ['npm ci', 'npx cds build --production']
+            }
+          ]
+        },
+        'modules': [
+          {
+            'name': obj.serviceModule,
+            'type': 'nodejs',
+            'path': 'gen/srv',
+            'requires': [
+              { 'name': obj.authResource }
+            ],
+            'provides': [
+              {
+                'name': 'srv-api',
+                'properties': {
+                  'srv-url': '${default-url}'
+                }
+              }
+            ],
+            'parameters': {
+              'buildpack': 'nodejs_buildpack',
+              'instances': 1
+            },
+            'build-parameters': {
+              'builder': 'npm-ci'
+            }
+          },
+          {
+            'name': obj.destinationContentModule,
+            'type': 'com.sap.application.content',
+            'requires': [
+              {
+                'name': obj.destinationResource,
+                'parameters': {
+                  'content-target': true
+                }
+              },
+              {
+                'name': obj.htmlRepoResource,
+                'parameters': {
+                  'service-key': {
+                    'name': `${obj.htmlRepoResource}-key`
+                  }
+                }
+              },
+              {
+                'name': obj.authResource,
+                'parameters': {
+                  'service-key': {
+                    'name': `${obj.authResource}-key`
+                  }
+                }
+              }
+            ],
+            'parameters': {
+              'content': {
+                'instance': {
+                  'destinations': [
+                    {
+                      'Name': `${obj.projectId}_approuter_${obj.htmlRepoResource}`,
+                      'ServiceInstanceName': `${obj.htmlRepoResource}-service`,
+                      'ServiceKeyName': `${obj.htmlRepoResource}-key`,
+                      'sap.cloud.service': obj.sapCloudService
+                    },
+                    {
+                      'Authentication': 'OAuth2UserTokenExchange',
+                      'Name': `${obj.projectId}_approuter_${obj.authResource}`,
+                      'ServiceInstanceName': `${obj.authResource}-service`,
+                      'ServiceKeyName': `${obj.authResource}-key`,
+                      'sap.cloud.service': obj.sapCloudService
+                    }
+                  ],
+                  'existing_destinations_policy': 'update'
+                }
+              }
+            },
+            'build-parameters': {
+              'no-source': true
+            }
+          },
+          {
+            'name': obj.appContentModule,
+            'type': 'com.sap.application.content',
+            'path': '.',
+            'requires': [
+              {
+                'name': obj.htmlRepoResource,
+                'parameters': {
+                  'content-target': true
+                }
+              }
+            ],
+            'build-parameters': {
+              'build-result': 'resources',
+              'requires': [
+                {
+                  'artifacts': [`${obj.zipName}.zip`],
+                  'name': obj.uiModule,
+                  'target-path': 'resources/'
+                }
+              ]
+            }
+          },
+          {
+            'name': obj.uiModule,
+            'type': 'html5',
+            'path': `app/${obj.appName}`,
+            'build-parameters': {
+              'build-result': 'dist',
+              'builder': 'custom',
+              'commands': ['npm install', 'npm run build:cf'],
+              'supported-platforms': []
+            }
+          }
+        ],
+        resources: [
+          {
+            'name': obj.authResource,
+            'type': 'org.cloudfoundry.managed-service',
+            'parameters': {
+              'config': {
+                'tenant-mode': 'dedicated',
+                'xsappname': `${obj.projectId}-\${org}-\${space}`
+              },
+              'path': './xs-security.json',
+              'service': 'xsuaa',
+              'service-name': `${obj.authResource}-service`,
+              'service-plan': 'application'
+            }
+          },
+          {
+            'name': obj.destinationResource,
+            'type': 'org.cloudfoundry.managed-service',
+            'parameters': {
+              'config': {
+                'HTML5Runtime_enabled': true,
+                'init_data': {
+                  'instance': {
+                    'destinations': [
+                      {
+                        'Authentication': 'NoAuthentication',
+                        'Name': 'ui5',
+                        'ProxyType': 'Internet',
+                        'Type': 'HTTP',
+                        'URL': 'https://ui5.sap.com'
+                      },
+                      {
+                        'Authentication': 'NoAuthentication',
+                        'HTML5.DynamicDestination': true,
+                        'HTML5.ForwardAuthToken': true,
+                        'Name': 'srv-api',
+                        'ProxyType': 'Internet',
+                        'Type': 'HTTP',
+                        'URL': '~{srv-api/srv-url}'
+                      }
+                    ],
+                    'existing_destinations_policy': 'update'
+                  }
+                },
+                'version': '1.0.0'
+              },
+              'service': 'destination',
+              'service-name': obj.destinationResource,
+              'service-plan': 'lite'
+            },
+            'requires': [
+              {
+                'name': 'srv-api'
+              }
+            ]
+          },
+          {
+            'name': obj.htmlRepoResource,
+            'type': 'org.cloudfoundry.managed-service',
+            'parameters': {
+              'service': 'html5-apps-repo',
+              'service-name': `${obj.htmlRepoResource}-service`,
+              'service-plan': 'app-host'
+            }
+          }
+        ],
+        'parameters': {
+          'deploy_mode': 'html5-repo',
+          'enable-parallel-deployments': true
+        }
+      };
+      return mtatmp2
+    }
+
     function formDataToObject(form) {
       const fd = new FormData(form);
       const obj = {};
@@ -970,8 +1313,8 @@
 
       // Dynamic scopes with $XSAPPNAME placeholder
       const dynamicScopes = obj.scopeRoleCollection ? obj.scopeRoleCollection.split(',').map(role => ({
-          name: `$XSAPPNAME.${role}`,
-          description: `${role} access`
+        name: `$XSAPPNAME.${role}`,
+        description: `${role} access`
       })) : [];
 
       // Default scope
@@ -982,16 +1325,16 @@
 
       // Dynamic role templates
       const dynamicRoleTemplates = obj.scopeRoleCollection ? obj.scopeRoleCollection.split(',').map(role => ({
-          name: role,
-          description: `${role} role`,
-          "scope-references": [`$XSAPPNAME.${role}`]
+        name: role,
+        description: `${role} role`,
+        "scope-references": [`$XSAPPNAME.${role}`]
       })) : [];
 
       // Default role template
       const defaultRoleTemplate = {
-          name: "Token_Exchange",
-          description: "UAA",
-          "scope-references": ["uaa.user"]
+        name: "Token_Exchange",
+        description: "UAA",
+        "scope-references": ["uaa.user"]
       };
 
       // Combine role templates
@@ -999,16 +1342,16 @@
 
       // Final config
       const config = {
-          xsappname: obj.xsAppName,
-          "tenant-mode": obj.tenantMode,
-          description: obj.xsDescription,
-          scopes: scopes,
-          "role-templates": roleTemplates
+        xsappname: obj.xsAppName,
+        "tenant-mode": obj.tenantMode,
+        description: obj.xsDescription,
+        scopes: scopes,
+        "role-templates": roleTemplates
       };
       return config;
     }
 
-    function attachFormHandler({ formId, format, outputPreId}) {
+    function attachFormHandler({ formId, format, outputPreId }) {
       const form = document.getElementById(formId);
       const outputPre = document.getElementById(outputPreId);
 
