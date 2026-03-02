@@ -752,9 +752,9 @@
         }
       } else if (obj.dbType === 'hana') {
         if (obj.isUiNeeded === 'no') {
-
+          mtatmp = getMTAHanaDBNoUI(obj);
         } else if (obj.isUiNeeded === 'yes') {
-
+          mtatmp = getMTAHanaDBYesUI(obj);
         }
       } else if (obj.dbType === 'postgres') {
         if (obj.isUiNeeded === 'no') {
@@ -1614,6 +1614,316 @@
       };
       return mtatmp2
     }
+
+    function getMTAHanaDBNoUI(obj) {
+      // Implementation for MTA without DB and UI
+      const mtatmp2 = {
+        '_schema-version': '3.3.0',
+        'ID': obj.projectId,
+        'description': obj.projectDescription,
+        'version': '1.0.0',
+        'build-parameters': {
+          'before-all': [
+            {
+              'builder': 'custom',
+              'commands': ['npm ci', 'npx cds build --production']
+            }
+          ]
+        },
+        'modules': [
+          {
+            'name': obj.serviceModule,
+            'type': 'nodejs',
+            'path': 'gen/srv',
+            'requires': [
+              { 'name': obj.authResource },
+              { 'name': obj.dbResource }
+            ],
+            'provides': [
+              {
+                'name': 'srv-api',
+                'properties': {
+                  'srv-url': '${default-url}'
+                }
+              }
+            ],
+            'parameters': {
+              'buildpack': 'nodejs_buildpack',
+              'instances': 1
+            },
+            'build-parameters': {
+              'builder': 'npm-ci'
+            }
+          },
+          {
+            'name': obj.dbDeployerModule,
+            'type': 'hdb',
+            'path': 'gen/db',
+            'requires': [
+              { 'name': obj.dbResource }, 
+              { 'name': obj.authResource }
+            ],
+            'parameters': {
+              'buildpack': 'nodejs_buildpack',
+              'no-route': true,
+              'no-start': true
+            }
+          }
+        ],
+        resources: [
+          {
+            'name': obj.authResource,
+            'type': 'org.cloudfoundry.managed-service',
+            'parameters': {
+              'config': {
+                'tenant-mode': 'dedicated',
+                'xsappname': `${obj.projectId}-\${org}-\${space}`
+              },
+              'path': './xs-security.json',
+              'service': 'xsuaa',
+              'service-name': `${obj.authResource}-service`,
+              'service-plan': 'application'
+            }
+          },
+          {
+            'name': obj.dbResource,
+            'type': 'com.sap.xs.hdi-container',
+            'parameters': {
+              'service': 'hana',
+              'service-plan': obj.servicePlan || 'hdi-shared'
+            }
+          }
+        ],
+        'parameters': {
+          'enable-parallel-deployments': true
+        }
+      };
+      return mtatmp2
+    }
+
+    function getMTAHanaDBYesUI(obj){
+      const mtatmp2 = {
+        '_schema-version': '3.3.0',
+        'ID': obj.projectId,
+        'description': obj.projectDescription,
+        'version': '1.0.0',
+        'build-parameters': {
+          'before-all': [
+            {
+              'builder': 'custom',
+              'commands': ['npm ci', 'npx cds build --production']
+            }
+          ]
+        },
+        'modules': [
+          {
+            'name': obj.serviceModule,
+            'type': 'nodejs',
+            'path': 'gen/srv',
+            'requires': [
+              { 'name': obj.authResource },
+              { 'name': obj.dbResource }
+            ],
+            'provides': [
+              {
+                'name': 'srv-api',
+                'properties': {
+                  'srv-url': '${default-url}'
+                }
+              }
+            ],
+            'parameters': {
+              'buildpack': 'nodejs_buildpack',
+              'instances': 1
+            },
+            'build-parameters': {
+              'builder': 'npm-ci'
+            }
+          },
+          {
+            'name': obj.dbDeployerModule,
+            'type': 'hdb',
+            'path': 'gen/db',
+            'requires': [
+              { 'name': obj.dbResource }, 
+              { 'name': obj.authResource }
+            ],
+            'parameters': {
+              'buildpack': 'nodejs_buildpack',
+              'no-route': true,
+              'no-start': true
+            }
+          },
+          {
+            'name': obj.destinationContentModule,
+            'type': 'com.sap.application.content',
+            'requires': [
+              {
+                'name': obj.destinationResource,
+                'parameters': {
+                  'content-target': true
+                }
+              },
+              {
+                'name': obj.htmlRepoResource,
+                'parameters': {
+                  'service-key': {
+                    'name': `${obj.htmlRepoResource}-key`
+                  }
+                }
+              },
+              {
+                'name': obj.authResource,
+                'parameters': {
+                  'service-key': {
+                    'name': `${obj.authResource}-key`
+                  }
+                }
+              }
+            ],
+            'parameters': {
+              'content': {
+                'instance': {
+                  'destinations': [
+                    {
+                      'Name': `${obj.projectId}_approuter_${obj.htmlRepoResource}`,
+                      'ServiceInstanceName': `${obj.htmlRepoResource}-service`,
+                      'ServiceKeyName': `${obj.htmlRepoResource}-key`,
+                      'sap.cloud.service': obj.sapCloudService
+                    },
+                    {
+                      'Authentication': 'OAuth2UserTokenExchange',
+                      'Name': `${obj.projectId}_approuter_${obj.authResource}`,
+                      'ServiceInstanceName': `${obj.authResource}-service`,
+                      'ServiceKeyName': `${obj.authResource}-key`,
+                      'sap.cloud.service': obj.sapCloudService
+                    }
+                  ],
+                  'existing_destinations_policy': 'update'
+                }
+              }
+            },
+            'build-parameters': {
+              'no-source': true
+            }
+          },
+          {
+            'name': obj.appContentModule,
+            'type': 'com.sap.application.content',
+            'path': '.',
+            'requires': [
+              {
+                'name': obj.htmlRepoResource,
+                'parameters': {
+                  'content-target': true
+                }
+              }
+            ],
+            'build-parameters': {
+              'build-result': 'resources',
+              'requires': [
+                {
+                  'artifacts': [`${obj.zipName}.zip`],
+                  'name': obj.uiModule,
+                  'target-path': 'resources/'
+                }
+              ]
+            }
+          },
+          {
+            'name': obj.uiModule,
+            'type': 'html5',
+            'path': `app/${obj.appName}`,
+            'build-parameters': {
+              'build-result': 'dist',
+              'builder': 'custom',
+              'commands': ['npm install', 'npm run build:cf'],
+              'supported-platforms': []
+            }
+          }
+        ],
+        resources: [
+          {
+            'name': obj.authResource,
+            'type': 'org.cloudfoundry.managed-service',
+            'parameters': {
+              'config': {
+                'tenant-mode': 'dedicated',
+                'xsappname': `${obj.projectId}-\${org}-\${space}`
+              },
+              'path': './xs-security.json',
+              'service': 'xsuaa',
+              'service-name': `${obj.authResource}-service`,
+              'service-plan': 'application'
+            }
+          },
+          {
+            'name': obj.dbResource,
+            'type': 'com.sap.xs.hdi-container',
+            'parameters': {
+              'service': 'hana',
+              'service-plan': obj.servicePlan || 'hdi-shared'
+            }
+          },
+          {
+            'name': obj.destinationResource,
+            'type': 'org.cloudfoundry.managed-service',
+            'parameters': {
+              'config': {
+                'HTML5Runtime_enabled': true,
+                'init_data': {
+                  'instance': {
+                    'destinations': [
+                      {
+                        'Authentication': 'NoAuthentication',
+                        'Name': 'ui5',
+                        'ProxyType': 'Internet',
+                        'Type': 'HTTP',
+                        'URL': 'https://ui5.sap.com'
+                      },
+                      {
+                        'Authentication': 'NoAuthentication',
+                        'HTML5.DynamicDestination': true,
+                        'HTML5.ForwardAuthToken': true,
+                        'Name': 'srv-api',
+                        'ProxyType': 'Internet',
+                        'Type': 'HTTP',
+                        'URL': '~{srv-api/srv-url}'
+                      }
+                    ],
+                    'existing_destinations_policy': 'update'
+                  }
+                },
+                'version': '1.0.0'
+              },
+              'service': 'destination',
+              'service-name': obj.destinationResource,
+              'service-plan': 'lite'
+            },
+            'requires': [
+              {
+                'name': 'srv-api'
+              }
+            ]
+          },
+          {
+            'name': obj.htmlRepoResource,
+            'type': 'org.cloudfoundry.managed-service',
+            'parameters': {
+              'service': 'html5-apps-repo',
+              'service-name': `${obj.htmlRepoResource}-service`,
+              'service-plan': 'app-host'
+            }
+          }
+        ],
+        'parameters': {
+          'deploy_mode': 'html5-repo',
+          'enable-parallel-deployments': true
+        }
+      };
+      return mtatmp2
+    }
+
     function formDataToObject(form) {
       const fd = new FormData(form);
       const obj = {};
