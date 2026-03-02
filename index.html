@@ -422,6 +422,76 @@
     [hidden] {
       display: none !important;
     }
+
+    #snackbar {
+      visibility: hidden;
+      min-width: 250px;
+      margin-left: -125px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 25px;
+      padding: 10px;
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      bottom: 30px;
+      font-size: 17px;
+    }
+
+    #snackbar.show {
+      visibility: visible;
+      -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+
+    @-webkit-keyframes fadein {
+      from {
+        bottom: 0;
+        opacity: 0;
+      }
+
+      to {
+        bottom: 30px;
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadein {
+      from {
+        bottom: 0;
+        opacity: 0;
+      }
+
+      to {
+        bottom: 30px;
+        opacity: 1;
+      }
+    }
+
+    @-webkit-keyframes fadeout {
+      from {
+        bottom: 30px;
+        opacity: 1;
+      }
+
+      to {
+        bottom: 0;
+        opacity: 0;
+      }
+    }
+
+    @keyframes fadeout {
+      from {
+        bottom: 30px;
+        opacity: 1;
+      }
+
+      to {
+        bottom: 0;
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 
@@ -635,32 +705,34 @@
           <span class="output-title">
             Output — Generate MTA <span class="badge">YAML</span>
           </span>
+          <div>
+            <button id="copyMTA" class="btn-download" type="button" title="Copy" aria-label="Copy">
+              <!-- Copy icon (inline SVG, no external deps) -->
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <!-- Clipboard outline -->
+                  <path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                  <!-- Clipboard top (clip) -->
+                  <rect x="9" y="2" width="6" height="4" rx="1" ry="1" />
+                </svg>
+              </span>
+            </button>
 
-          <button id="copyBtn" class="btn-download" type="button" title="Copy" aria-label="Copy">
-            <!-- Copy icon (inline SVG, no external deps) -->
-            <span class="icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <!-- Clipboard outline -->
-                <path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                <!-- Clipboard top (clip) -->
-                <rect x="9" y="2" width="6" height="4" rx="1" ry="1" />
-              </svg>
-            </span>
-          </button>
+            <button id="downloadMTA" class="btn-download" type="button" title="Download" aria-label="Download">
+              <!-- Download icon (inline SVG) -->
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <!-- Solid tray -->
+                  <path d="M4 18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3h-2v3H6v-3H4v3z" />
+                  <!-- Solid downward arrow -->
+                  <path
+                    d="M12 3a1 1 0 0 1 1 1v8.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L11 12.586V4a1 1 0 0 1 1-1z" />
+                </svg>
+              </span>
+            </button>
+          </div>
 
-          <button id="downloadMTA" class="btn-download" type="button" title="Download" aria-label="Download">
-            <!-- Download icon (inline SVG) -->
-            <span class="icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-                <!-- Solid tray -->
-                <path d="M4 18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3h-2v3H6v-3H4v3z" />
-                <!-- Solid downward arrow -->
-                <path
-                  d="M12 3a1 1 0 0 1 1 1v8.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L11 12.586V4a1 1 0 0 1 1-1z" />
-              </svg>
-            </span>
-          </button>
 
         </header>
         <pre id="outputMTA"># Submit "Generate MTA" form to produce YAML</pre>
@@ -672,12 +744,38 @@
           <span class="output-title">
             Output — Generate XS-Security <span class="badge">JSON</span>
           </span>
-          <button id="downloadXS" class="btn-download" type="button">Download</button>
+          <div>
+            <button id="copyXS" class="btn-download" type="button" title="Copy" aria-label="Copy">
+              <!-- Copy icon (inline SVG, no external deps) -->
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <!-- Clipboard outline -->
+                  <path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                  <!-- Clipboard top (clip) -->
+                  <rect x="9" y="2" width="6" height="4" rx="1" ry="1" />
+                </svg>
+              </span>
+            </button>
+            <button id="downloadXS" class="btn-download" type="button" title="Download" aria-label="Download">
+              <!-- Download icon (inline SVG) -->
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <!-- Solid tray -->
+                  <path d="M4 18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3h-2v3H6v-3H4v3z" />
+                  <!-- Solid downward arrow -->
+                  <path
+                    d="M12 3a1 1 0 0 1 1 1v8.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L11 12.586V4a1 1 0 0 1 1-1z" />
+                </svg>
+              </span>
+            </button>
+          </div>
         </header>
         <pre id="outputXS">{ /* Submit "Generate XS-Security" form to produce JSON */ }</pre>
       </section>
     </aside>
   </main>
+  <div id="snackbar">Copied to clipboard</div>
 
   <script>
     /* ---------- Tabs + Title + Output visibility ---------- */
@@ -1385,7 +1483,7 @@
             'type': 'hdb',
             'path': 'gen/db',
             'requires': [
-              { 'name': obj.dbResource }, 
+              { 'name': obj.dbResource },
               { 'name': obj.authResource }
             ],
             'parameters': {
@@ -1426,7 +1524,7 @@
       return mtatmp2
     }
 
-    function getMTAHanaDBYesUI(obj){
+    function getMTAHanaDBYesUI(obj) {
       const mtatmp2 = {
         '_schema-version': '3.3.0',
         'ID': obj.projectId,
@@ -1470,7 +1568,7 @@
             'type': 'hdb',
             'path': 'gen/db',
             'requires': [
-              { 'name': obj.dbResource }, 
+              { 'name': obj.dbResource },
               { 'name': obj.authResource }
             ],
             'parameters': {
@@ -1758,6 +1856,25 @@
 
     wireDownload({ buttonId: 'downloadMTA', preId: 'outputMTA', baseName: 'mta', ext: 'yaml', mime: 'text/yaml' });
     wireDownload({ buttonId: 'downloadXS', preId: 'outputXS', baseName: 'xs-security', ext: 'json', mime: 'application/json' });
+
+    /* ---------- Download (per output panel) ---------- */
+    function wireCopy({ buttonId, preId }) {
+      const btn = document.getElementById(buttonId);
+      const pre = document.getElementById(preId);
+      btn.addEventListener('click', () => {
+        const content = pre.textContent || '';
+        navigator.clipboard.writeText(content).then(() => {
+          var x = document.getElementById("snackbar");
+          x.className = "show";
+          setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }).catch(err => {
+          console.error('Failed to copy: ', err);
+          alert('Failed to copy content. Please try manually.');
+        });
+      });
+    }
+    wireCopy({ buttonId: 'copyMTA', preId: 'outputMTA' });
+    wireCopy({ buttonId: 'copyXS', preId: 'outputXS' });
 
 
     function wireApplyTemplate() {
