@@ -492,6 +492,13 @@
         opacity: 0;
       }
     }
+
+    .preview {
+      max-height: 80vh; /* Sets a maximum height for the block */
+      overflow-y: auto; /* Adds a vertical scrollbar when content exceeds max-height */
+      /* Optional: include overflow-x: auto; for long lines within the fixed height */
+      overflow-x: auto; 
+    }
   </style>
 </head>
 
@@ -735,7 +742,7 @@
 
 
         </header>
-        <pre id="outputMTA"># Submit "Generate MTA" form to produce YAML</pre>
+        <pre class="preview" id="outputMTA"># Submit "Generate MTA" form to produce YAML</pre>
       </section>
 
       <!-- XS-Security Output (JSON) -->
